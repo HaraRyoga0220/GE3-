@@ -23,7 +23,7 @@ public://ƒƒ“ƒo•Ï”
 	//”CˆÓ‚Ìƒ{ƒ^ƒ“‚ª—£‚³‚ê‚½uŠÔ
 
 private:
-	 Microsoft::WRL::ComPtr<IDirectInputDevice8> keyboard;
+	Microsoft::WRL::ComPtr<IDirectInputDevice8> keyboard;
 	 BYTE key[256] = {};
 	 BYTE keyPre[256] = {};
 };
