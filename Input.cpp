@@ -9,7 +9,6 @@ void Input::Initialize(WinApp*winApp)
 
     HRESULT result;
     // DirectInput‚Ì‰Šú‰»
-    ComPtr<IDirectInput8> directInput;
     result = DirectInput8Create(
         winApp_->GetHInstance(), DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&directInput, nullptr);
     assert(SUCCEEDED(result));
