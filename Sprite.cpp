@@ -55,7 +55,7 @@ void Sprite::Draw()
 
 	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(0,materialResource->GetGPUVirtualAddress());
 
-	dxCommon_->GetCommandList()->SetGraphicsRootShaderResourceView(1, wvpResource->GetGPUVirtualAddress());
+	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
 
 	dxCommon_->GetCommandList()->DrawInstanced(3, 1, 0, 0);
 }

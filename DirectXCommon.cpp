@@ -12,15 +12,16 @@ void DirectXCommon::Initialize(WinApp*winApp)
 {
     this->winApp=winApp;
 
-    InitializeFixFPS();
-
-
     DeviceInitialize();
     CommandInitialize();
     SwapChainInitialize();
     RenderTargetInitialize();
     DepthBufferInitialize();
     FenceInitialize();
+
+    rtvDesctiptorHeap = CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
+    srvDescriptorHeap = CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
+
 }
 
 void DirectXCommon::PreDraw()
@@ -46,6 +47,10 @@ void DirectXCommon::PreDraw()
         FLOAT clearColor[] = { 0.1f,0.25f, 0.5f,0.0f }; // 青っぽい色
         commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
         commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+
+        ID3D12DescriptorHeap* descriptorHeaps[] = { srvDescriptorHeap.Get() };
+        commandList->SetDescriptorHeaps(1, descriptorHeaps);
+
 
         // ４．描画コマンドここから
         // ビューポート設定コマンド
@@ -98,8 +103,7 @@ void DirectXCommon::PostDraw()
             CloseHandle(event);
         }
 
-        UpdateFixFPS();
-
+       
         // キューをクリア
         result = commandAllocator->Reset();
         assert(SUCCEEDED(result));
@@ -264,8 +268,6 @@ void DirectXCommon::RenderTargetInitialize()
         D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvHeap->GetCPUDescriptorHandleForHeapStart();
         // 裏か表かでアドレスがずれる
         rtvHandle.ptr += i * device->GetDescriptorHandleIncrementSize(rtvHeapDesc.Type);
-        // レンダーターゲットビューの設定
-        D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
         // シェーダーの計算結果をSRGBに変換して書き込む
         rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
         rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
@@ -329,30 +331,17 @@ void DirectXCommon::FenceInitialize()
     assert(SUCCEEDED(result));
 }
 
-void DirectXCommon::InitializeFixFPS()
+ID3D12DescriptorHeap* DirectXCommon::CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescripots, bool shaderVisible)
 {
-    reference_ = std::chrono::steady_clock::now();
-}
+    ID3D12DescriptorHeap* descriptorHeap = nullptr;
+    D3D12_DESCRIPTOR_HEAP_DESC descriptorHeapDesc{};
+    descriptorHeapDesc.Type = heapType;
+    descriptorHeapDesc.NumDescriptors = numDescripots;
+    descriptorHeapDesc.Flags = shaderVisible ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 
-void DirectXCommon::UpdateFixFPS()
-{
-    const std::chrono::microseconds kMinTime(uint64_t(1000000.0f / 60.0f));
+    HRESULT result = device->CreateDescriptorHeap(&descriptorHeapDesc, IID_PPV_ARGS(&descriptorHeap));
+    assert(SUCCEEDED(result));
 
-    const std::chrono::microseconds kMinCheckTime(uint64_t(1000000.0f / 65.0f));
-
-    std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
-
-    std::chrono::microseconds elapsed = std::chrono::duration_cast<std::chrono::microseconds>(now - reference_);
-
-    if (elapsed < kMinCheckTime) {
-
-        while (std::chrono::steady_clock::now() - reference_ < kMinTime) {
-
-            std::this_thread::sleep_for(std::chrono::microseconds(1));
-        }
-      
-    }
-
-    reference_ = std::chrono::steady_clock::now();
+    return descriptorHeap;
 }
 
