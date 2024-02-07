@@ -1,5 +1,7 @@
 ﻿#include "WinApp.h"
 
+#pragma comment(lib,"winmm.lib")
+
 // ウィンドウプロシージャ
 LRESULT WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     // メッセージ応じてゲーム固有の処理を行う
@@ -16,8 +18,6 @@ LRESULT WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 }
 void WinApp::Initialize()
 {
-	
-
     // ウィンドウクラスの設定
     w.cbSize = sizeof(WNDCLASSEX);
     w.lpfnWndProc = (WNDPROC)WindowProc; // ウィンドウプロシージャを設定
@@ -48,7 +48,7 @@ void WinApp::Initialize()
     // ウィンドウを表示状態にする
     ShowWindow(hwnd, SW_SHOW);
 
-    MSG msg{};  // メッセージ
+    timeBeginPeriod(1);
 }
 
 bool WinApp::Update()

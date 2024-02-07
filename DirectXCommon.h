@@ -1,16 +1,16 @@
 #pragma once
+#include<Windows.h>
 #include<wrl.h>
 #include<d3d12.h>
 #include<dxgi1_6.h>
-
+#include<chrono>
 #include<vector>
-
 #include"WinApp.h"
 
 class DirectXCommon
 {
 private:
-	template<class T>using Comptr = Microsoft::WRL::ComPtr<T>;
+	template<class T>using ComPtr = Microsoft::WRL::ComPtr<T>;
 
 public:
 	void Initialize(WinApp*winApp);
@@ -39,6 +39,10 @@ private:
 	//フェンス
 	void FenceInitialize();
 
+
+	void InitializeFixFPS();
+	void UpdateFixFPS();
+
 private:
 	WinApp* winApp = nullptr;
 
@@ -65,6 +69,6 @@ private:
 
 	   D3D12_RESOURCE_BARRIER barrierDesc{};
 
-
+	   std::chrono::steady_clock::time_point reference_;
 };
 

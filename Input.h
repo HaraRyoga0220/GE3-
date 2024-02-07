@@ -1,5 +1,5 @@
 #pragma once
-#include<windows.h>
+#include<Windows.h>
 #include <dinput.h>
 #define DIRECTINPUT_VERSION    0x0800
 #pragma comment(lib,"dinput8.lib")
@@ -11,17 +11,17 @@
 
 class Input
 {
-public://ƒƒ“ƒo•Ï”
-	//‰Šú‰»
+public://ãƒ¡ãƒ³ãƒå¤‰æ•°
+	//åˆæœŸåŒ–
 	void Initialize(WinApp*winApp);
-	//XV
+	//æ›´æ–°
 	void Update();
 
-	//”CˆÓ‚Ìƒ{ƒ^ƒ“‚ñ‚ğ‰Ÿ‚³‚ê‚Ä‚¢‚é
+	//ä»»æ„ã®ãƒœã‚¿ãƒ³ã‚“ã‚’æŠ¼ã•ã‚Œã¦ã„ã‚‹
 	bool PushKey(BYTE keyNumber);
-	//”CˆÓ‚Ìƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚½uŠÔ
+	//ä»»æ„ã®ãƒœã‚¿ãƒ³ãŒæŠ¼ã•ã‚ŒãŸç¬é–“
 	bool TriggerKey(BYTE keyNumber);
-	//”CˆÓ‚Ìƒ{ƒ^ƒ“‚ª—£‚³‚ê‚½uŠÔ
+	//ä»»æ„ã®ãƒœã‚¿ãƒ³ãŒé›¢ã•ã‚ŒãŸç¬é–“
 
 private:
 	WinApp* winApp_ = nullptr;

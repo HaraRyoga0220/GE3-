@@ -5,9 +5,9 @@ class WinApp
 public:
 	static LRESULT WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
-	//‰Šú‰»
+	//åˆæœŸåŒ–
 	void Initialize();
-	//XV
+	//æ›´æ–°
 	bool Update();
 
 	void Finalize();
@@ -16,9 +16,9 @@ public:
 	HINSTANCE GetHInstance()const { return w.hInstance; }
 
 public:
-	 // ƒEƒBƒ“ƒhƒEƒTƒCƒY
-    static const int window_width = 1280;  // ‰¡•
-    static const int window_height = 720;  // c•
+	 // ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚µã‚¤ã‚º
+    static const int window_width = 1280;  // æ¨ªå¹…
+    static const int window_height = 720;  // ç¸¦å¹…
 	
 private:
 	HWND hwnd;
