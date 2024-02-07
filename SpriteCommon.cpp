@@ -28,6 +28,20 @@ void SpriteCommon::Initialize(DirectXCommon*dxCommon)
 	D3D12_ROOT_SIGNATURE_DESC descriptorRootSignature{};
 	descriptorRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
+	D3D12_ROOT_PARAMETER rootParameters[2]{};
+
+	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[0].Descriptor.ShaderRegister = 0;
+
+	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+	rootParameters[1].Descriptor.ShaderRegister = 0;
+
+	descriptorRootSignature.pParameters = rootParameters;
+	descriptorRootSignature.NumParameters = _countof(rootParameters);
+
+
 	ComPtr<ID3D10Blob>signatureBlob;
 	ComPtr<ID3D10Blob>errorBlob;
 	result = D3D12SerializeRootSignature(&descriptorRootSignature, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
@@ -79,7 +93,7 @@ void SpriteCommon::Initialize(DirectXCommon*dxCommon)
 	graphicsPipelineStateDesc.RasterizerState = rasterizerDesc;
 
 	graphicsPipelineStateDesc.NumRenderTargets = 1;
-	graphicsPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
+	graphicsPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 
 	graphicsPipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 
