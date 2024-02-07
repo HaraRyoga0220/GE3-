@@ -1,7 +1,7 @@
 ﻿#include "WinApp.h"
 #include"External/imgui/imgui.h"
 
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 // ウィンドウプロシージャ
 LRESULT WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
@@ -24,6 +24,9 @@ LRESULT WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 }
 void WinApp::Initialize()
 {
+
+    CoInitializeEx(0, COINIT_MULTITHREADED);
+
     // ウィンドウクラスの設定
     w.cbSize = sizeof(WNDCLASSEX);
     w.lpfnWndProc = (WNDPROC)WindowProc; // ウィンドウプロシージャを設定
@@ -54,7 +57,6 @@ void WinApp::Initialize()
     // ウィンドウを表示状態にする
     ShowWindow(hwnd, SW_SHOW);
 
-    timeBeginPeriod(1);
 }
 
 bool WinApp::Update()
@@ -77,6 +79,8 @@ bool WinApp::Update()
 
 void WinApp::Finalize()
 {
+    CoUninitialize();
+
      // ウィンドウクラスを登録解除
     UnregisterClass(w.lpszClassName, w.hInstance);
 }
