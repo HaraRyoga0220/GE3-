@@ -13,7 +13,6 @@ void SpriteCommon::Initialize(DirectXCommon*dxCommon)
 
 	ComPtr<IDxcUtils>dxcUtils;
 	ComPtr<IDxcCompiler3>dxcCompiler;
-	
 	ComPtr<IDxcIncludeHandler>includeHandler;
 
 	result = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils));
@@ -28,7 +27,14 @@ void SpriteCommon::Initialize(DirectXCommon*dxCommon)
 	D3D12_ROOT_SIGNATURE_DESC descriptorRootSignature{};
 	descriptorRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
-	D3D12_ROOT_PARAMETER rootParameters[2]{};
+	D3D12_DESCRIPTOR_RANGE descriptorRange[1]{};
+	descriptorRange[0].BaseShaderRegister = 0;
+	descriptorRange[0].NumDescriptors = 1;
+	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+
+	D3D12_ROOT_PARAMETER rootParameters[3]{};
 
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
@@ -38,8 +44,26 @@ void SpriteCommon::Initialize(DirectXCommon*dxCommon)
 	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
 	rootParameters[1].Descriptor.ShaderRegister = 0;
 
+	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRange;
+	rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);
+
 	descriptorRootSignature.pParameters = rootParameters;
 	descriptorRootSignature.NumParameters = _countof(rootParameters);
+
+	D3D12_STATIC_SAMPLER_DESC staticSamples[1] ={};
+	staticSamples[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+	staticSamples[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	staticSamples[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	staticSamples[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	staticSamples[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+	staticSamples[0].MaxLOD = D3D12_FLOAT32_MAX;
+	staticSamples[0].ShaderRegister = 0;
+	staticSamples[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+	descriptorRootSignature.pStaticSamplers = staticSamples;
+	descriptorRootSignature.NumStaticSamplers = _countof(staticSamples);
 
 
 	ComPtr<ID3D10Blob>signatureBlob;
@@ -58,7 +82,7 @@ void SpriteCommon::Initialize(DirectXCommon*dxCommon)
 	D3D12_INPUT_ELEMENT_DESC inputElementDesc[2] = {};
 	inputElementDesc[0].SemanticName = "POSITION";
 	inputElementDesc[0].SemanticIndex = 0;
-	inputElementDesc[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+	inputElementDesc[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	inputElementDesc[0].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
 
 	inputElementDesc[1].SemanticName = "TEXCOORD";
@@ -78,7 +102,7 @@ void SpriteCommon::Initialize(DirectXCommon*dxCommon)
 
 	D3D12_RASTERIZER_DESC rasterizerDesc{};
 
-	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
+	rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
 
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
@@ -112,37 +136,11 @@ void SpriteCommon::Initialize(DirectXCommon*dxCommon)
 	assert(SUCCEEDED(result));
 }
 
-DirectX::ScratchImage SpriteCommon::LoadTexture(const std::wstring& filePath)
+void SpriteCommon::SpritePreDraw()
 {
-	DirectX::ScratchImage image{};
-	HRESULT result = DirectX::LoadFromWICFile(filePath.c_str(), DirectX::WIC_FLAGS_FORCE_SRGB, nullptr, image);
-	assert(SUCCEEDED(result));
-
-	DirectX::ScratchImage mipImage{};
-	result = DirectX::GenerateMipMaps(
-		image.GetImages(), image.GetImageCount(), image.GetMetadata(),
-		DirectX::TEX_FILTER_SRGB, 0, mipImage
-	);
-	assert(SUCCEEDED(result));
-
-	return image;
-}
-
-void SpriteCommon::UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages)
-{
-	const DirectX::TexMetadata& metaData = mipImages.GetMetadata();
-
-	for (size_t mipLevel = 0; mipLevel < metaData.mipLevels; ++mipLevel) {
-		const DirectX::Image* img = mipImages.GetImage(mipLevel, 0, 0);
-		HRESULT result = texture->WriteToSubresource(
-			UINT(mipLevel),
-			nullptr,
-			img->pixels,
-			UINT(img->rowPitch),
-			UINT(img->slicePitch)
-		);
-		assert(SUCCEEDED(result));
-	}
+	dxCommon_->GetCommandList()->SetGraphicsRootSignature(GetRootSignature());
+	dxCommon_->GetCommandList()->SetPipelineState(GetPipelineState());
+	dxCommon_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
 IDxcBlob* SpriteCommon::CompileShader(const std::wstring& filePath, const wchar_t* profile, IDxcUtils* dxcUtils, IDxcCompiler3* dxcCompiler, IDxcIncludeHandler* includeHandler)
